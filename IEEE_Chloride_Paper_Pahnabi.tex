@@ -11,6 +11,7 @@
 \usepackage{graphicx}
 \usepackage{textcomp}
 \usepackage{xcolor}
+\newcommand{\Rd}[1]{{\color{red} #1}}
 \def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-08em
     T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 \begin{document}
@@ -49,10 +50,10 @@ Particularly, chloride-induced corrosion and carbonation of concrete reinforceme
 Numerical methods, like the Finite Difference Method (FDM) and the Finite Element Method (FEM), are widely used to predict chloride diffusion in concrete and its negative impact on rebar. 
 In this study, we implement a FEM code and validate it against previously obtained FDM results (Dr. Guthrie's paper or results... this is a NIST software and there's a paper about it). 
 The FEM result shows good agreement with the FDM. 
-This study shows the acfcuracy of FEM and also its advantages in handling complex geometries.
+This study shows the accuracy of FEM and also its advantages in handling complex geometries.
 \fi
 A proper understanding of chloride ion ingress into concrete and effective mitigation of its effects are crucial for preventing corrosion and premature failure of reinforced concrete structures.
-Previous National Institute of Standards and Technology(NIST) software employed the finite difference method (FDM) to evaluate chloride diffusion in concrete; however, this approach is not readily extensible to modeling complex geometries including the effects of reinforcing rebar. The purpose of this study is to develop finite element method (FEM) software that can exactly reproduce the FDM results, and can be extended to handle more general and complex geometries, such as concrete containing reinforcing steel (rebar).
+Previous National Institute of Standards and Technology (NIST) software employed the finite difference method (FDM) to evaluate chloride diffusion in concrete; however, this approach is not readily extensible to modeling complex geometries including the effects of reinforcing rebar. The purpose of this study is to develop finite element method (FEM) software that can exactly reproduce the FDM results, and can be extended to handle more general and complex geometries, such as concrete containing reinforcing steel (rebar).
 The FEM results show good agreement with the FDM results and the FEM could be used for the more complicated problem indicating little difference between both methods.
 \end{abstract}
 
@@ -69,10 +70,12 @@ In the past, both empirical and numerical approaches have been used to develop c
 Therefore, numerical methods are frequently used to ensure reliable prediction in general conditions. These methods include the finite difference method (FDM) and finite element method(FEM). 
 
 National Institute of Standards and Technology(NIST) historically deployed FDM software\cite{b18} used by state departments of transportation to predict chloride diffusion in concrete bridge decks\cite{b19}. While FDM provides a straightforward and computationally efficient method for modeling diffusion, it is often limited in handling complex geometries. 
-There are many papers about the importance the FEM in chloride diffusion\cite{b12,b14}. Furthermore, studies \cite{b13}  show that the FEM can be used to predict crack initiation and propagation due to chloride-induced corrosion. These results then used to update chloride propagation and predictions to realistically represent how cracking and corrosion affect each other. \iffalse The following numerical FEM studies examined the influence of cracks in concrete exposed to chloride-rich environments, showing an increased corrosion rate of steel reinforcement due to macrocell interactions between corroding and passive areas \cite{b13,b14}.\fi
+There are many papers about the importance the FEM in chloride diffusion\cite{b12,b14}. Furthermore, studies \cite{b13}  show that the FEM can be used to predict crack initiation and propagation due to chloride-induced corrosion. These results are then used to update chloride propagation and predictions to realistically represent how cracking and corrosion affect each other. \iffalse The following numerical FEM studies examined the influence of cracks in concrete exposed to chloride-rich environments, showing an increased corrosion rate of steel reinforcement due to macrocell interactions between corroding and passive areas \cite{b13,b14}.\fi
 
-In this study, we leverage FEM's flexibility to simulate chloride diffusion and validate its performance against FDM results. While FDM is straightforward for simple domains, it struggles with the geometric complexity and boundary conditions. The variational formulation and capacity of FEM to operate unstructured meshed make it inherently more flexible. The following sections demonstrate how FEM provides alternative framework for predicting chloride penetration, ultimately supporting better durability evaluation and maintenance strategies for RC infrastructure.
-
+In this study, we leverage FEM's flexibility to simulate chloride diffusion and validate its performance against FDM results. 
+While FDM is straightforward for simple domains, it struggles with the geometric complexity and boundary conditions. 
+The variational formulation and capacity of FEM to operate on unstructured meshed make it inherently more flexible. 
+The following sections demonstrate how FEM provides alternative framework for predicting chloride penetration, which should ultimately support geometrically precise durability evaluation and maintenance strategies for RC infrastructure.
 Furthermore, a pathway is identified to translate the existing FDM code into the expanded FEM framework, enabling more accurate and flexible modeling of real-world structural conditions.
 
 
@@ -83,15 +86,18 @@ Furthermore, a pathway is identified to translate the existing FDM code into the
 
 Chloride ingress into concrete is often modeled using the coupled system of equations,
 \begin{equation}
+\left \{
 \begin{aligned}
 \frac{\partial C_{\mathrm{free}}}{\partial t}
 &=
 \frac{\partial}{\partial x}
 \left(
-D(x)\,\frac{\partial C_{\mathrm{free}}}{\partial x}
+D\,\frac{\partial C_{\mathrm{free}}}{\partial x}
 \right)
 -
-k_{\rm react}\, r(t)\, C_{\mathrm{free}}\\
+k_{\rm react}\, r\left(
+C_{\mathrm{react}}
+\right)\, C_{\mathrm{free}}\\
 &\quad - k_{\mathrm{bind}}
 \left(
 \frac{\alpha C_{\mathrm{free}}}{1 + \beta C_{\mathrm{free}}}
@@ -99,9 +105,10 @@ k_{\rm react}\, r(t)\, C_{\mathrm{free}}\\
 C_{\mathrm{ads}}
 \right)
 +
-f(t), \\
-&\quad 0 < x < L,\; t > 0,
+f, \\
+&\quad 0 \leq x \leq L,\; 0 < t \leq T,
 \end{aligned}
+\right.
 \label{eq:diff_react}
 \end{equation}
 
@@ -146,12 +153,16 @@ C_{\mathrm{ads}}
 \label{eq:adsorption_rate}
 \end{equation}
 
+where $C_{\mathrm{free}}$ denotes the free chloride concentration in the pore solution, $C_{\mathrm{ads}}$ describes the adsorbed chloride concentration (mol/m$^3$), and $C_{\mathrm{react}}$ indicates chloride consumed due to irreversible chemical reaction.
+Known inputs to this system include the diffusion coefficient, $D$; the reaction rate constant, $k_{\mathrm{react}}$; a reaction indicator function, $r$, that equals one in reactive regions and zero otherwise; a source term $f$; and coefficients $k_{\mathrm{bind}}$, $\alpha$, and $\beta$ which control the binding kinetics and adsorption capacity.
+Here, $L$ denotes the length of the spatial domain and $T$ indicates the termination time.
 
-where $C_{\mathrm{free}}(x,t)$ denotes the free chloride concentration in the pore solution, $D(x)$ is the spatially varying diffusion coefficient, $k_{\mathrm{react}}$ is the reaction rate constant, $r(t)$ is a reaction indicator function that equals one in reactive regions and zero otherwise, and $f(t)$ represents a source term. The variable $C_{\mathrm{ads}}$ denotes the adsorbed chloride concentration (mol/m$^3$). The parameters $k_{\mathrm{bind}}$, $\alpha$, and $\beta$ control the binding kinetics and adsorption capacity, while $L$ denotes the length of the spatial domain.
+Equation (\ref{eq:diff_react}) represents the diffusion--reaction model governing the free chloride concentration, which is inherently coupled with the amount of free chloride that is consumed due reactions and adsorption. 
+Equations~(\ref{eq:reaction_rate}) and (\ref{eq:adsorption_rate}), consequently, represent irreversible reactions and Langmuir-type adsorption (which describes the binding of chloride ions to the concrete), respectively. 
+%This model couples the diffusion of free chloride ions with an adsorption process. 
+By accounting for both the reaction and the adsorption terms, the bound chloride is separated from the total chloride content, and the remaining portion corresponds to the free chloride concentration.
 
-The first equation represents the diffusion--reaction model governing the free chloride concentration. By neglecting the reaction term, the model reduces to the pure diffusion case (see (1)--(2)). Equation~(3) represents a Langmuir-type adsorption model, which describes the binding of chloride ions to the concrete. This model couples the diffusion of free chloride ions with an adsorption process. By accounting for this adsorption term, the bound chloride is separated from the total chloride content, and the remaining portion corresponds to the free chloride concentration.
-
-\paragraph{Boundary Conditions}
+\paragraph{Boundary and Initial Conditions}
 
 The diffusion--reaction problem is closed by prescribing boundary conditions at both ends of the spatial domain. At the top boundary ($x=0$), the chloride concentration is typically fixed to a prescribed value, representing a constant or time--dependent exposure condition. This is enforced through a Dirichlet boundary condition,
 \begin{equation}
@@ -171,6 +182,8 @@ At the bottom boundary ($x=L$), chloride transport frequently is controlled thro
 \end{equation}
 where $h$ represents the prescribed flux at the boundary which is typically $0$. Together, these boundary conditions reflect a system in which chloride ingress is driven by exposure at one boundary while transport across the opposite boundary is regulated by a specified flux.
 
+\Rd{Briefly introduce initial conditions... typically 0 for all but not necessarily}
+
 \iffalse
 The coupled diffusion-reaction–adsorption problem is solved using a staggered time-integration scheme.\fi
 %TODO reference
@@ -179,18 +192,22 @@ The coupled diffusion-reaction–adsorption problem is solved using a staggered 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Numerical Methods}
 
-The coupled diffusion--reaction--adsorption system is solved using a staggered (operator-splitting) time-integration scheme, in which diffusion and reaction/adsorption are solved sequentially at each time step~\cite{b17}. The Forward Euler method is used for all temporal discretization while we compute the spatial discretization with FEM.
+The coupled diffusion--reaction--adsorption system is solved using a staggered (operator-splitting) time-integration scheme, in which diffusion and reaction/adsorption are solved sequentially at each time step~\cite{b17}. 
+The Forward Euler method is used for all temporal discretization while we compute the spatial discretization using FDM or FEM.
+Particularly, we use the Lie splitting \cite{} \Rd{Ramin add this} in which for a given time step, the reaction-diffusion system is solved first while neglecting the effects of adsorption, after which the adsorption equation is solved independently using the just-computed results from the reaction-diffusion system.
+Finally, mass balance is restored by removing the computed adsorped chloride from the computed free chloride.
+This splitting technique decouples the nonlinearity at the expense of being first order accurate in time. 
+However, because Forward Euler is already first-order accurate in time, the effects of splitting mechanism are consistent with those of our integration scheme, leading overall efficiency.
 
 \subsection{Finite Difference Method (FDM)}\label{AA}
 
  \paragraph{Spatial Discretization (Finite Difference)}
 
-The spatial domain is discretized using a one-dimensional finite difference method. The interval $[0,L]$ is divided into $N$ uniform subintervals of size $\Delta x = L/N$, resulting in nodal points $x_i = i\,\Delta x$ for $i = 0,\dots,N$. The solution at each node is approximated by a discrete variable $d_i(t) \approx d(x_i,t)$.
+The spatial domain is discretized using a one-dimensional finite difference method. The interval $[0,L]$ is divided into $N$ uniform subintervals of size $\Delta x = L/N$, resulting in nodal points $x_i = i\,\Delta x$ for $i = 0,\dots,N$. 
+The solution at each node is approximated by a discrete variable $d_i(t) \approx d(x_i,t)$.
 
 Spatial derivatives in the diffusion term are approximated using second-order central differences.
-
 %So, in this section, the FDM formulation is used for both spatial and time sections, but in the FEM, we have FEM in space and FDM in time.
-
 Boundary conditions are incorporated directly into the discrete system. At the top boundary, the prescribed concentration is enforced by fixing the nodal value, while at the bottom boundary, the specified flux condition is imposed through a finite difference approximation of the spatial gradient. 
 
 %%%%%%%%%%
@@ -247,7 +264,7 @@ d_{N-1} = d_N - h\,\Delta x.
 
 \paragraph{Time Discretization}
 
-\textit{Forward Euler (Explicit) Method:} In the Forward Euler method, for the interior nodes we have, for $1 \le i \le N-1$,
+\textit{Forward Euler (Explicit) Method:} Using the Lie splitting, the Forward Euler method for the interior nodes ($1 \le i \le N-1$) gives
 
 
 \begin{equation}
@@ -326,7 +343,7 @@ k_{\mathrm{react}}\, r_N\, d_N^n
 \paragraph{CFL Condition for Explicit Scheme}\mbox{} To be sure that the explicit method (Forward-Euler) is reliable and the results  are stable, following limitation is considered:
 
 \begin{equation}
-{\rm CFL} = \frac{\max(D) \, \Delta t}{\Delta x^2} \le 0.5 \quad \text{for stability.}
+\frac{\max(D) \, \Delta t}{\Delta x^2} \le 0.5 
 \label{eq:cfl}
 \end{equation}
 
@@ -348,9 +365,9 @@ formulation is obtained by multiplying the equation by a suitable test function
 and integrating over the spatial domain. Applying integration by parts to the
 diffusion term reduces the regularity requirements on the solution and introduces
 boundary contributions with a clear physical interpretation in terms of fluxes.\fi
-In abstract form, the weak problem can be written as: find $u \in S$ such that
+Making use of the Lie splitting, in abstract form, the weak problem can be written as: find $u \in S$ such that
 \begin{equation}
-a(u,w) = \ell(w)
+(\dot{u},w) + (u, k_{react} r w)-a(u,w) = \ell(w)
 \qquad \forall w \in V ,
 \end{equation}
 
@@ -367,6 +384,9 @@ R\, u\, w \, dx,
 \label{eq:nitsche-bilinear-reaction}
 \end{equation}
 
+\begin{equation}
+	(u,w) = \int_{\Omega} u w dx,
+\end{equation}
 
 \begin{equation}
 \begin{aligned}
@@ -379,28 +399,28 @@ f\, w \, dx,
 
 
 where $S$ and $V$ denote appropriate trial and test spaces, $a(\cdot,\cdot)$ is
-the bilinear form associated with diffusion and reaction processes, and
+the bilinear form associated with diffusion and reaction processes, $(\dot{u},w)$ represents the time flux, $(u, k_{react} r w)$ decribes the reaction terms, and 
 $\ell(\cdot)$ represents the contribution of source terms and boundary fluxes \cite{b15}.
 
 The solution field is approximated within a finite-dimensional subspace spanned
 by shape functions defined over a partition of the spatial domain.
 This leads to a discrete representation of the form:
 \begin{equation}
-u_h(x) = \sum_{i=1}^{N} d_i\, N_i(x),
+u_h(x) = \sum_{i=1}^{N} d_i(t)\, N_i(x),
 \end{equation}
 where $N_i(x)$ are the finite element shape functions and $d_i$ are the unknown
 nodal values(coefficients). Substituting this approximation into the weak form and choosing the test functions from the same space yields a system of algebraic equations of the form.
 
-The Standard form is:
-\begin{equation}
-\mathbf{K}\mathbf{d} = \mathbf{F},
-\end{equation}
-where $\mathbf{K}$ is the global stiffness matrix arising from diffusion and
-reaction terms, $\mathbf{d}$ is the vector of nodal unknowns representing the
-chloride concentration ($\mathbf{C_{free}}$), and $\mathbf{F}$ contains the contributions from source
-terms and boundary fluxes. This system is then
-solved to obtain the spatial distribution of chloride concentration.
-
+%The Standard form is:
+%\begin{equation}
+%\mathbf{K}\mathbf{d} = \mathbf{F},
+%\end{equation}
+%where $\mathbf{K}$ is the global stiffness matrix arising from diffusion and
+%reaction terms, $\mathbf{d}$ is the vector of nodal unknowns representing the
+%chloride concentration ($\mathbf{C_{free}}$), and $\mathbf{F}$ contains the contributions from source
+%terms and boundary fluxes. This system is then
+%solved to obtain the spatial distribution of chloride concentration.
+%
 
 %%%%%previous math section%%%%%%%%%%%
 %%%%%previous math section%%%%%%%%%%%
@@ -550,9 +570,7 @@ leads to a system of ordinary differential equations of the form
 \begin{equation}
 \mathbf{M}\, \dot{\mathbf{d}}(t)
 +
-\mathbf{K}\, \mathbf{d}(t)
-+
-\mathbf{RM}\, \mathbf{d}(t)
+(\mathbf{K} + \mathbf{R})\, \mathbf{d}(t)
 =
 \mathbf{F}(t),
 \label{eq:semi-discrete}
@@ -561,25 +579,25 @@ where $\mathbf{M}$ is the mass matrix, $\mathbf{K}$ is the diffusion stiffness
 matrix, $\mathbf{R}$ is the reaction matrix, $\mathbf{d}(t)$ is the vector of
 time-dependent nodal unknowns, and $\mathbf{F}(t)$ is the load vector.
 
-
-To account for limited binding capacity, the reaction term is controlled by a binary flag $r \in \{0,1\}$. The flag is defined as
-\[
-r =
-\begin{cases}
-1, & C_{free} > C_{react}, \\
-0, & C_{free} \le C_{react},
-\end{cases}
-\]
-where $C_{free}$ and $C_{react}$ denote the free and reacted (bound) chloride concentrations, respectively. When the reacted chloride level reaches or exceeds the free chloride, further reaction is deactivated.
-
-The semi-discrete system becomes
-\begin{equation}
-\mathbf{M}\dot{\mathbf{d}}(t)
-+ \mathbf{K}\mathbf{d}(t)
-+ r\,\mathbf{M} \mathbf{d}(t)
-= \mathbf{F}(t).
-\end{equation}
-
+%
+%To account for limited binding capacity, the reaction term is controlled by a binary flag $r \in \{0,1\}$. The flag is defined as
+%\[
+%r =
+%\begin{cases}
+%1, & C_{free} > C_{react}, \\
+%0, & C_{free} \le C_{react},
+%\end{cases}
+%\]
+%where $C_{free}$ and $C_{react}$ denote the free and reacted (bound) chloride concentrations, respectively. When the reacted chloride level reaches or exceeds the free chloride, further reaction is deactivated.
+%
+%The semi-discrete system becomes
+%\begin{equation}
+%\mathbf{M}\dot{\mathbf{d}}(t)
+%+ \mathbf{K}\mathbf{d}(t)
+%+ r\,\mathbf{M} \mathbf{d}(t)
+%= \mathbf{F}(t).
+%\end{equation}
+%
 
 \textit{Forward Euler Scheme}: Using a Forward Euler discretization in time, the time derivative in
 \eqref{eq:semi-discrete} is approximated as
@@ -602,9 +620,7 @@ $\mathbf{d}^{n+1}$ yields the explicit update formula
 \big(
 \mathbf{F}^n
 -
-\mathbf{K}\, \mathbf{d}^n
--
-\mathbf{RM}\, \mathbf{d}^n
+(\mathbf{K} + \mathbf{R})\, \mathbf{d}^n
 \big),
 \label{eq:forward-euler}
 \end{equation}
@@ -629,7 +645,7 @@ where $\lambda_{\max}(M^{-1}K)$ is the largest eigenvalue of the discrete system
 \subsection{Nitsche Method for Weak Imposition of Dirichlet Boundary Conditions}
 
 To weakly impose essential boundary conditions within the finite element
-framework, Nitsche’s method is employed \cite{b16}. This approach allows Dirichlet boundary conditions to be enforced variationally, while maintaining consistency and stability of the numerical scheme. In contrast, finite difference methods (FDM) apply boundary conditions directly at grid points, making their implementation simple, especially for structured domains.
+framework as is done in the FDM software, Nitsche’s method is employed \cite{b16}. This approach allows Dirichlet boundary conditions to be enforced variationally, while maintaining consistency and stability of the numerical scheme. In contrast, finite difference methods (FDM) apply boundary conditions directly at grid points, making their implementation simple, especially for structured domains.
 
 \iffalse We consider the time-dependent diffusion--reaction problem in \eqref{eq:diff_react}.\fi In Nitsche’s method \cite{b16}, the standard weak formulation is augmented by additional boundary terms that weakly enforce the Dirichlet condition. These terms ensure consistency with the strong form, restore symmetry of the bilinear form, and add a stabilization contribution controlled by a penalty parameter.
 
@@ -641,8 +657,13 @@ of boundary conditions to remain entirely within the spatial discretization,
 while time dependence enters naturally through the temporal derivative.
 \fi
 
-The resulting bilinear form is
-
+The resulting problem is
+%
+\begin{equation}
+ 	(\dot{u},w) + (u,k_{react}rw) - a_{\rm Nitsche}(u,w) = \ell_{\rm Nitsche}(w)
+\end{equation}
+where the bilinear form is
+%
 \begin{equation}
 \begin{aligned}
 a_{\rm Nitsche}(u,w)
@@ -662,10 +683,8 @@ D\, w,_x\, u \, ds
 \end{equation}
 where $u$ is the trial function, $w$ is the test function, $h_e$ is a
 characteristic boundary element length, and $\gamma > 0$ is a penalty parameter. A value of $\gamma = 100$ was used, which yielded results in agreement with the NIST software.
-
 The associated linear functional is given by
-
-
+%
 \begin{equation}
 \begin{aligned}
 \ell_{\rm Nitsche}(w)
@@ -680,7 +699,7 @@ D\, w,_x\, g \, ds
 \label{eq:nitsche-linear-reaction}
 \end{equation}
 where $f$ is the body force and $g$ denotes the prescribed Dirichlet boundary
-value.
+value. 
 
 %%%%%%%%%
 \iffalse
@@ -690,7 +709,7 @@ terms, as it does not involve spatial derivatives.
 \fi
 %%%%%%%%%
 
-\paragraph{Element-Level Contributions}
+%\paragraph{Element-Level Contributions}
 
 \iffalse
 At the element level, the diffusion and reaction contributions to the stiffness
@@ -711,181 +730,44 @@ where $N_a$ and $N_b$ are local basis functions and primes denote derivatives
 with respect to the physical coordinate $x$.
 \fi
 
-For elements adjacent to $\Gamma_D$, the Nitsche boundary terms add the
-following contributions to the stiffness matrix:
-\begin{equation}
-K^{(e)}_{ab}
-\mathrel{+}=
-\int_{\Omega_e}
-D
-\left(
-- N_a' N_b
-- N_b' N_a
-+ \frac{\gamma}{h_e} N_a N_b
-\right)
-dx,
-\label{eq:nitsche-ke-reaction}
-\end{equation}
-and to the load vector:
-\begin{equation}
-F^{(e)}_a
-\mathrel{+}=
-\int_{\Omega_e}
-\left(
--
-D\, N_a'\, g
-+
-\frac{\gamma D}{h_e}\, N_a\, g
-\right)
-dx,
-\label{eq:nitsche-fe-reaction}
-\end{equation}
+%For elements adjacent to $\Gamma_D$, the Nitsche boundary terms add the
+%following contributions to the stiffness matrix:
+%\begin{equation}
+%K^{(e)}_{ab}
+%\mathrel{+}=
+%\int_{\Omega_e}
+%D
+%\left(
+%- N_a' N_b
+%- N_b' N_a
+%+ \frac{\gamma}{h_e} N_a N_b
+%\right)
+%dx,
+%\label{eq:nitsche-ke-reaction}
+%\end{equation}
+%and to the load vector:
+%\begin{equation}
+%F^{(e)}_a
+%\mathrel{+}=
+%\int_{\Omega_e}
+%\left(
+%-
+%D\, N_a'\, g
+%+
+%\frac{\gamma D}{h_e}\, N_a\, g
+%\right)
+%dx,
+%\label{eq:nitsche-fe-reaction}
+%\end{equation}
 
 
 %NEW IMAGES
 \section{Validation and Comparison}
 
-In this section, we compare the finite difference method (FDM) with the finite element formulations. The objectives are threefold: first, to verify that all methods converge; second, to numerically assess the error associated with the coarse mesh; and third, to examine the differences between the FEM formulations and the FDM commonly used in practice.
-
-Without the use of the Nitsche method and mass lumping, the finite element
-results were found to be in close agreement with those obtained using the
-finite difference method (FDM). In the Nitsche formulation, Dirichlet boundary
-conditions are imposed weakly through the introduction of a penalty term
-parameterized by $\gamma$, rather than being enforced strongly. 
-
-When the Nitsche method is combined with mass lumping, the resulting finite
-element solution reproduces the FDM results exactly. This agreement provides
-confidence that the proposed numerical techniques do not alter the underlying
-physics of the problem and remain consistent with the physics-based simulation
-benchmarks defined by the National Institute of Standards and Technology
-(NIST) software.
-
-In FEM(-ML +N), ML refers to mass lumping and N refers to Nitsche’s method. A plus sign (+) indicates that the corresponding technique is used, while a minus sign (-) indicates that it is not. Using this notation, the FEM variants are as follows:  
-\begin{itemize}
-    \item FEM(-ML -N): without mass lumping and without Nitsche’s method  
-    \item FEM(-ML +N): without mass lumping but with Nitsche’s method  
-    \item FEM(+ML -N): with mass lumping but without Nitsche’s method  
-    \item FEM(+ML +N): with mass lumping and with Nitsche’s method
-\end{itemize}
-
-Fig.~\ref{fig:fdm-vs-fem-nitsche_100} shows the results on a coarse mesh, while Fig.~\ref{fig:fdm-vs-fem-nitsche_500} presents the corresponding comparison for a fine mesh. \iffalse Each figure contains five curves: FDM, FEM(-ML -N), FEM(+ML -N), FEM(-ML +N), and FEM(+ML +N).\fi
-
-
-
-\begin{figure}[!b]
-\centering
-\includegraphics[width=\linewidth]{100_plots.png}
-\caption{Comparing FDM with FEM with Nitsche and ML with coarse mesh.}
-\label{fig:fdm-vs-fem-nitsche_100}
-\end{figure}
-
-\begin{figure}[!tb]
-\centering
-\includegraphics[width=\linewidth]{500_plots.png}
-\caption{Comparing FDM with FEM with Nitsche and ML with fine mesh.}
-\label{fig:fdm-vs-fem-nitsche_500}
-\end{figure}
-
-The next set of figures illustrates the differences between the FEM solutions
-and the reference FDM solution.
-
-
-\begin{figure}[!tb]
-\centering
-\includegraphics[width=\linewidth]{100_error.png}
-\caption{Error comparison between FDM and FEM formulations on the coarse mesh.}
-\label{fig:fdm-vs-fem-error-all-coarse}
-\end{figure}
-
-\begin{figure}[!tb]
-\centering
-\includegraphics[width=\linewidth]{500_error.png}
-\caption{Error comparison between FDM and FEM formulations on the fine mesh.}
-\label{fig:fdm-vs-fem-error-all-fine}
-\end{figure}
-
-
-Fig.~\ref{fig:fdm-vs-fem-error-all-coarse} compares the FDM solution with all of the four FEM formulations.
-The Fig.~\ref{fig:fdm-vs-fem-error-all-coarse} plot corresponds to the coarse mesh, while Fig.~\ref{fig:fdm-vs-fem-error-all-fine}  the second corresponds to
-the fine mesh.
-
-As observed in the previous figures, the discrepancy between the FDM solution
-and the FEM formulation using Nitsche’s method without mass lumping is
-significantly larger than the others. To improve clarity and enable a more
-meaningful comparison among the remaining methods, this formulation is omitted
-in the following plots.
-
-\begin{figure}[!tb]
-\centering
-\includegraphics[width=\linewidth]{100_error_without_NwoM.png}
-\caption{Error comparison between FDM and selected FEM formulations on the coarse mesh.}
-\label{fig:fdm-vs-fem-error-reduced-coarse}
-\end{figure}
-
-\begin{figure}[!tb]
-\centering
-\includegraphics[width=\linewidth]{500_error_without_NwoM.png}
-\caption{Error comparison between FDM and selected FEM formulations on the fine mesh.}
-\label{fig:fdm-vs-fem-error-reduced-fine}
-\end{figure}
-
-Accordingly, Fig.~\ref{fig:fdm-vs-fem-error-reduced-coarse} presents the comparison
-between the FDM solution and the three FEM formulations, excluding FEM(-ML +N). 
-Fig.~\ref{fig:fdm-vs-fem-error-reduced-coarse} corresponds to the coarse mesh, 
-while Fig.~\ref{fig:fdm-vs-fem-error-reduced-fine} shows the results for the fine mesh.
-
-Accordingly, we compare the coarse mesh (100 spatial layers, 500 time steps) and the fine mesh (500 spatial layers, 100\,000 time steps) to assess the influence of mesh resolution on the solution. 
-We consider the FDM solution and four FEM formulations: 
-(i)~FEM(-ML -N), 
-(ii)~FEM(+ML -N), 
-(iii)~FEM(-ML +N), and 
-(iv)~FEM(+ML +N).
-
-%%%%%%
-\begin{table}[!tb]
-\caption{Convergence between coarse and fine meshes: maximum and mean absolute difference of the solution \iffalse(fine minus coarse interpolated onto the fine grid)\fi.}
-\label{tab:mesh-convergence}
-\centering
-\begin{tabular}{|l|c|c|}
-\hline
-\textbf{Method} & \textbf{Max.\ abs.\ diff.} & \textbf{Mean abs.\ diff.} \\
-\hline
-FDM & 0.0389 & 0.00412 \\
-\hline
-FEM(-ML -N) & 0.0445 & 0.00569 \\
-\hline
-FEM(+ML -N) & 0.0440 & 0.00475 \\
-\hline
-FEM(-ML +N) & 0.201 & 0.0281 \\
-\hline
-FEM(+ML +N) & 0.0389 & 0.00412 \\
-\hline
-\end{tabular}
-\end{table}
-
-Table~\ref{tab:mesh-convergence} reports the maximum and mean absolute differences between the fine-mesh solution and the coarse-mesh solution (interpolated onto the fine grid).
-All methods exhibit convergence with mesh refinement.
-For FDM and the standard FEM formulations (with or without mass lumping), the discrepancies are of order $10^{-2}$ in the maximum norm and about $5\times10^{-3}$ on average, indicating that the coarse mesh already provides a reasonably accurate approximation.
-
-A larger difference is observed for the FEM formulation using Nitsche's method without mass lumping (maximum difference $\approx 0.20$, mean $\approx 0.028$).
-This indicates a stronger sensitivity of this formulation to mesh resolution.
-When mass lumping is combined with Nitsche's method, however, the differences reduce to the same level as the other methods.
-Overall, these results confirm the convergence of all approaches while highlighting the improved stability and mesh robustness obtained by combining Nitsche's method with mass lumping.
-
-\iffalse
-Accordingly, we compare the coarse mesh (100 spatial layers, 500 time steps) and the fine mesh (500 spatial layers, 100\,000 time steps) to assess the influence of mesh size on the solution.
-Again we consider the FDM solution and four FEM formulations:
-(i)~FEM without Nitsche's method and without mass lumping,
-(ii)~FEM without Nitsche's method and with mass lumping,
-(iii)~FEM with Nitsche's method and without mass lumping, and
-(iv)~FEM with both Nitsche's method and mass lumping.
-Table~\ref{tab:mesh-convergence} reports the maximum and mean absolute difference between the fine-mesh solution and the coarse-mesh solution (interpolated onto the fine grid).
-The largest differences occur for FEM with Nitsche and without mass lumping (max.\ abs.\ diff.\ $\approx 0.20$, mean $\approx 0.028$); the other formulations show much smaller differences (max.\ $\approx 0.04$, mean $\approx 0.005$), indicating that the fine mesh is particularly valuable when using Nitsche's method without mass lumping.
-\fi
-%%%%%%
-
-
-The same domain and parameters are considered for FDM and FEM. Some of them are listed in Table~\ref{tab:model-parameters}.
+In this section, we compare the finite difference method (FDM) with the finite element formulations. 
+The objectives are threefold: first, to verify that all methods converge; second, to numerically assess the error associated with the coarse mesh; and third, to examine the differences between the FEM formulations and the FDM commonly used in practice.
+To make these comparisons, we compute chloride diffusion through a slab studied in \cite{} \Rd{Dr. Guthrie's paper}. 
+A complete discussion of concrete-chloride chemistry present in these simulations is outside the scope of this paper, but input parameters and forcing behavior for these simulations are described in Tables \ref{tab:model-parameters} and \ref{tab:monthly-data}.
 
 
 %%%%%%Appendix
@@ -1176,6 +1058,146 @@ $\frac{(C3A \cdot C3A_{\mathrm{react}} + C4AF \cdot C4AF_{\mathrm{react}}}{(WC -
 \end{table}
 
 
+Without the use of the Nitsche method and mass lumping, the finite element
+results were found to be in close agreement with those obtained using the
+finite difference method (FDM). In the Nitsche formulation, Dirichlet boundary
+conditions are imposed weakly through the introduction of a penalty term
+parameterized by $\gamma$, rather than being enforced strongly. 
+
+When the Nitsche method is combined with mass lumping, the resulting finite
+element solution reproduces the FDM results exactly. This agreement provides
+confidence that the proposed numerical techniques do not alter the underlying
+physics of the problem and remain consistent with the physics-based simulation
+benchmarks defined by the National Institute of Standards and Technology
+(NIST) software.
+
+In FEM(-ML +N), ML refers to mass lumping and N refers to Nitsche’s method. A plus sign (+) indicates that the corresponding technique is used, while a minus sign (-) indicates that it is not. Using this notation, the FEM variants are as follows:  
+\begin{itemize}
+    \item FEM(-ML -N): without mass lumping and without Nitsche’s method  
+    \item FEM(-ML +N): without mass lumping but with Nitsche’s method  
+    \item FEM(+ML -N): with mass lumping but without Nitsche’s method  
+    \item FEM(+ML +N): with mass lumping and with Nitsche’s method
+\end{itemize}
+
+Fig.~\ref{fig:fdm-vs-fem-nitsche_100} shows the results on a coarse mesh, while Fig.~\ref{fig:fdm-vs-fem-nitsche_500} presents the corresponding comparison for a fine mesh. \iffalse Each figure contains five curves: FDM, FEM(-ML -N), FEM(+ML -N), FEM(-ML +N), and FEM(+ML +N).\fi
+
+
+
+\begin{figure}[!b]
+\centering
+\includegraphics[width=\linewidth]{100_plots.png}
+\caption{Comparing FDM with FEM with Nitsche and ML with coarse mesh.}
+\label{fig:fdm-vs-fem-nitsche_100}
+\end{figure}
+
+\begin{figure}[!tb]
+\centering
+\includegraphics[width=\linewidth]{500_plots.png}
+\caption{Comparing FDM with FEM with Nitsche and ML with fine mesh.}
+\label{fig:fdm-vs-fem-nitsche_500}
+\end{figure}
+
+The next set of figures illustrates the differences between the FEM solutions
+and the reference FDM solution.
+
+
+\begin{figure}[!tb]
+\centering
+\includegraphics[width=\linewidth]{100_error.png}
+\caption{Error comparison between FDM and FEM formulations on the coarse mesh.}
+\label{fig:fdm-vs-fem-error-all-coarse}
+\end{figure}
+
+\begin{figure}[!tb]
+\centering
+\includegraphics[width=\linewidth]{500_error.png}
+\caption{Error comparison between FDM and FEM formulations on the fine mesh.}
+\label{fig:fdm-vs-fem-error-all-fine}
+\end{figure}
+
+
+Fig.~\ref{fig:fdm-vs-fem-error-all-coarse} compares the FDM solution with all of the four FEM formulations.
+The Fig.~\ref{fig:fdm-vs-fem-error-all-coarse} plot corresponds to the coarse mesh, while Fig.~\ref{fig:fdm-vs-fem-error-all-fine}  the second corresponds to
+the fine mesh.
+
+As observed in the previous figures, the discrepancy between the FDM solution
+and the FEM formulation using Nitsche’s method without mass lumping is
+significantly larger than the others. To improve clarity and enable a more
+meaningful comparison among the remaining methods, this formulation is omitted
+in the following plots.
+
+\begin{figure}[!tb]
+\centering
+\includegraphics[width=\linewidth]{100_error_without_NwoM.png}
+\caption{Error comparison between FDM and selected FEM formulations on the coarse mesh.}
+\label{fig:fdm-vs-fem-error-reduced-coarse}
+\end{figure}
+
+\begin{figure}[!tb]
+\centering
+\includegraphics[width=\linewidth]{500_error_without_NwoM.png}
+\caption{Error comparison between FDM and selected FEM formulations on the fine mesh.}
+\label{fig:fdm-vs-fem-error-reduced-fine}
+\end{figure}
+
+Accordingly, Fig.~\ref{fig:fdm-vs-fem-error-reduced-coarse} presents the comparison
+between the FDM solution and the three FEM formulations, excluding FEM(-ML +N). 
+Fig.~\ref{fig:fdm-vs-fem-error-reduced-coarse} corresponds to the coarse mesh, 
+while Fig.~\ref{fig:fdm-vs-fem-error-reduced-fine} shows the results for the fine mesh.
+
+Accordingly, we compare the coarse mesh (100 spatial layers, 500 time steps) and the fine mesh (500 spatial layers, 100\,000 time steps) to assess the influence of mesh resolution on the solution. 
+We consider the FDM solution and four FEM formulations: 
+(i)~FEM(-ML -N), 
+(ii)~FEM(+ML -N), 
+(iii)~FEM(-ML +N), and 
+(iv)~FEM(+ML +N).
+
+%%%%%%
+\begin{table}[!tb]
+\caption{Convergence between coarse and fine meshes: maximum and mean absolute difference of the solution \iffalse(fine minus coarse interpolated onto the fine grid)\fi.}
+\label{tab:mesh-convergence}
+\centering
+\begin{tabular}{|l|c|c|}
+\hline
+\textbf{Method} & \textbf{Max.\ abs.\ diff.} & \textbf{Mean abs.\ diff.} \\
+\hline
+FDM & 0.0389 & 0.00412 \\
+\hline
+FEM(-ML -N) & 0.0445 & 0.00569 \\
+\hline
+FEM(+ML -N) & 0.0440 & 0.00475 \\
+\hline
+FEM(-ML +N) & 0.201 & 0.0281 \\
+\hline
+FEM(+ML +N) & 0.0389 & 0.00412 \\
+\hline
+\end{tabular}
+\end{table}
+
+Table~\ref{tab:mesh-convergence} reports the maximum and mean absolute differences between the fine-mesh solution and the coarse-mesh solution (interpolated onto the fine grid).
+All methods exhibit convergence with mesh refinement.
+For FDM and the standard FEM formulations (with or without mass lumping), the discrepancies are of order $10^{-2}$ in the maximum norm and about $5\times10^{-3}$ on average, indicating that the coarse mesh already provides a reasonably accurate approximation.
+
+A larger difference is observed for the FEM formulation using Nitsche's method without mass lumping (maximum difference $\approx 0.20$, mean $\approx 0.028$).
+This indicates a stronger sensitivity of this formulation to mesh resolution.
+When mass lumping is combined with Nitsche's method, however, the differences reduce to the same level as the other methods.
+Overall, these results confirm the convergence of all approaches while highlighting the improved stability and mesh robustness obtained by combining Nitsche's method with mass lumping.
+
+\iffalse
+Accordingly, we compare the coarse mesh (100 spatial layers, 500 time steps) and the fine mesh (500 spatial layers, 100\,000 time steps) to assess the influence of mesh size on the solution.
+Again we consider the FDM solution and four FEM formulations:
+(i)~FEM without Nitsche's method and without mass lumping,
+(ii)~FEM without Nitsche's method and with mass lumping,
+(iii)~FEM with Nitsche's method and without mass lumping, and
+(iv)~FEM with both Nitsche's method and mass lumping.
+Table~\ref{tab:mesh-convergence} reports the maximum and mean absolute difference between the fine-mesh solution and the coarse-mesh solution (interpolated onto the fine grid).
+The largest differences occur for FEM with Nitsche and without mass lumping (max.\ abs.\ diff.\ $\approx 0.20$, mean $\approx 0.028$); the other formulations show much smaller differences (max.\ $\approx 0.04$, mean $\approx 0.005$), indicating that the fine mesh is particularly valuable when using Nitsche's method without mass lumping.
+\fi
+%%%%%%
+
+
+The same domain and parameters are considered for FDM and FEM. Some of them are listed in Table~\ref{tab:model-parameters}.
+
 
 \iffalse
 \begin{table}[!tb]
@@ -1257,8 +1279,11 @@ In this study, the finite element method (FEM) was applied to simulate one-dimen
 
 In addition to its accuracy, FEM offers greater flexibility for modeling complex engineering problems in reinforced concrete. In particular, it allows the treatment of irregular geometries, spatially varying material properties, and more sophisticated boundary conditions, which are difficult to handle using standard FDM approaches.
 
-{Potential extensions}: The present study motivates the extension of the FEM analysis for chloride diffusion in many directions, including 2D and 3D analysis, alternative temporal discretization extension to cracking to advective flow.
+Future work could extend FEM analysis for chloride diffusion for 2D and 3D analysis, alternative temporal discretization, or multiphysics extensions to cracking or advective flow.
 
+\section{Acknowledgements}
+W. S. Guthrie and R. Pahnabi were partially funded by the King Hussein Fellowship.
+This financial support is gratefully acknowledged.
 
 \begin{thebibliography}{00}
 \bibitem{b1}
