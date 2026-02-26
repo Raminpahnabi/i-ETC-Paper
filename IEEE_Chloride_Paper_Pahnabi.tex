@@ -13,8 +13,8 @@
 \def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-08em
     T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
     
-\usepackage{setspace}
-\doublespacing
+%\usepackage{setspace}
+%\doublespacing
 \begin{document}
 
 
@@ -630,6 +630,15 @@ However, with refinement, this difference diminishes.
 \label{fig:fdm-vs-fem-error-all-fine}
 \end{figure}
 
+Also in Fig.~\ref{fig:coarse_vs_fine}, we compare the results from the fine and coarse meshes in a single plot. In Fig.~\ref{fig:coarse_vs_fine}, you can see that with refinement, we obtain convergence with the FEM method by comparing the coarse and fine mesh results, which gives us confidence in the results. Based on this plot, the FEM(+ML -N) results are one order of magnitude smaller than the others.
+\Rd{Also include a plot that describes how FEM -N on coarse scale compares to FDM on fine scale and discuss confidence in our results.}
+
+\begin{figure}[!tb]
+\centering
+\includegraphics[width=\linewidth]{coarse_vs_fine_error.png}
+\caption{Error comparison between FDM and FEM formulations on coarse and fine mesh}
+\label{fig:coarse_vs_fine}
+\end{figure}
 
 
 \begin{figure}[!tb]
@@ -644,7 +653,7 @@ As can be seen, variation in the boundary enforcement parameter $\gamma$ yields 
 Simulations performed here use 100 uniform spatial elements and 10{,}000 time steps.
 The absolute difference between FDM results, each of the Nitsche methods, and the FEM results with strongly enforced boundary conditions are shown in  Fig.~\ref{fig:nitsche_error_with_fem}.
 Particularly, Nitsche methods yield results whose difference compared to the FDM results are an order of magnitude larger than that of the FEM results wherein Dirichlet boundary conditions are strongly enforced.
-\Rd{Also include a plot that describes how FEM -N on coarse scale compares to FDM on fine scale and discuss confidence in our results.}
+
 
 Nitsche methods are also particularly interesting because stability in the method can still yield non-monotonic solutions, whereas all other solutions are monotonic.
 As is illustrated in \ref{fig:nitsche_plots}, if $\gamma \geq 80$ is chosen, the maximal chloride value is computed as larger than the input value, making the results less physically meaningful.
