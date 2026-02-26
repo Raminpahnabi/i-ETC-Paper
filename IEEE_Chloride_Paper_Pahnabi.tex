@@ -52,7 +52,7 @@ The FEM results show good agreement with the FDM results and the FEM could be us
 Chloride, Finite Deference Method (FDM), Finite Element Method (FEM), Concrete, Corrosion
 \end{IEEEkeywords}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Introduction}
 
 Chloride-induced corrosion is the main cause of deterioration of reinforced concrete (RC) structures in chloride-laden environments\cite{b1} and consequently, much research effort has been put towards the prediction of chloride-induced corrosion damage in RC structures\cite{b2,b3,b4,b5,b6,b7}. 
@@ -246,9 +246,9 @@ k_{\mathrm{react}}\, r_N\, d_N^n
 
 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%% FEM %%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%% FEM %%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Finite Element Method (FEM)}\label{AA}
 
 \paragraph{Spatial Discretization}
@@ -348,9 +348,9 @@ Equation \eqref{eq:forward-euler} is conditionally stable and requires the time
 step $\Delta t$ to satisfy a problem-dependent stability constraint \eqref{eq:cfl}.
 
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%NITSCHE%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%NITSCHE%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%NITSCHE%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%NITSCHE%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%NITSCHE%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%NITSCHE%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Nitsche Method for Weak Imposition of Dirichlet Boundary Conditions}
 
 To weakly impose essential boundary conditions within the finite element
@@ -405,7 +405,7 @@ value.
 
 
 
-%NEW IMAGES
+%%%%%%%%%%%%%NEW IMAGES
 \section{Validation and Comparison}
 
 In this section, we compare the finite difference method (FDM) with the finite element formulations. 
@@ -415,7 +415,7 @@ A complete discussion of concrete-chloride chemistry present in these simulation
 The interested reader is referred to the work of Bentz and Feng \cite{b19} for additional guidance.
 
 
-%%%%%%Appendix
+%%%%%%%%%%%%Appendix%%%%%%%%%%%%%%%%%%
 \begin{table}[!tb]
 \caption{Model parameters used in the chloride ingress simulations}
 \label{tab:model-parameters}
@@ -578,21 +578,9 @@ Chloride--aluminate reaction rate: 1e-08
 \end{table}
 
 
-%With Finite Element method and without the use of the Mass lumping, the finite element results were found to be in close agreement with those obtained using the finite difference method (FDM). 
-%
-%When the FEM is combined with mass lumping, the resulting finite element solution reproduces the FDM results exactly. 
-%This agreement provides confidence that the proposed numerical techniques do not alter the underlying physics of the problem and remain consistent with the physics-based simulation
-%benchmarks defined by the National Institute of Standards and Technology (NIST) software.
-
 Because of the numerous types of FEM computations performed, the following notation is followed hereafter for FEM: a plus sign (+) indicates that the corresponding technique is used, while a minus sign (-) indicates that it is not, with potential methods being mass lumping (ML) and Nitsche (N).
 For instance, FEM(-ML +N) indicates that no  mass lumping was used but that Nitsche’s method was used. 
-%Using this notation, the FEM variants are as follows:  
-%\begin{itemize}
-%    \item FEM(-ML -N): without mass lumping and without Nitsche’s method  
-%    \item FEM(-ML +N): without mass lumping but with Nitsche’s method  
-%    \item FEM(+ML -N): with mass lumping but without Nitsche’s method  
-%    \item FEM(+ML +N): with mass lumping and with Nitsche’s method
-%\end{itemize}
+
 
 Comparative plots are first presented for FDM, FEM(-ML -N), and FEM(+ML -N) because each of these strongly enforces input Dirichlet boundary conditions.
 Coarse mesh computations involved a uniform spatial discretization with 100 spatial  elements and 500 time steps Fig.~\ref{fig:fdm-vs-fem-nitsche_100},
@@ -659,21 +647,6 @@ Nitsche methods are also particularly interesting because stability in the metho
 As is illustrated in \ref{fig:nitsche_plots}, if $\gamma \geq 80$ is chosen, the maximal chloride value is computed as larger than the input value, making the results less physically meaningful.
 Consequently, care should be taken when using the Nitsche method to ensure that results are interpreted correctly and match expected concentrations compared to physical measurement.
 
-%\begin{figure}[!tb]
-%\centering
-%\includegraphics[width=\linewidth]{100_N_error.png}
-%\caption{Error comparison between FDM and FEM formulations with Nitsche's method}
-%\label{fig:nitsche_error}
-%\end{figure}
-
-
-
-%Fig.~\ref{fig:nitsche_error} illustrates the difference between the Nitsche's method results and the NIST software results.
-%In this section, we considered fixed time steps and spatial discretization. The spatial discretization was set to 100 elements, and the number of time steps was 10{,}000. 
-%We varied the penalty parameter $\gamma$ to investigate its effect on the results.
-%
-%As shown in Fig.~\ref{fig:nitsche_error} , increasing the value of $\gamma$ improved the accuracy up to $\gamma = 50$, which provided the best performance among the selected values. 
-%However, for $\gamma > 50$, the results gradually deteriorated. Furthermore, due to stability limitations, values of $\gamma$ greater than 80 led to unstable and nonphysical results.
 
 \begin{figure}[!tb]
 \centering
@@ -681,45 +654,6 @@ Consequently, care should be taken when using the Nitsche method to ensure that 
 \caption{Error comparison between FDM and selected FEM formulations.}
 \label{fig:nitsche_error_with_fem}
 \end{figure}
-
-
-%
-%Fig.~\ref{fig:nitsche_error_with_fem} presents a comparison between FEM(+ML $-$N), FEM($-$ML $-$N), and FEM(+ML +N) against the FDM solution. 
-%It can be observed that the best performance corresponds to FEM(+ML $-$N). 
-
-
-%%%%%%
-\iffalse
-\begin{table}[!tb]
-\caption{Convergence between coarse and fine meshes: maximum and mean absolute difference of the solution.}
-\label{tab:mesh-convergence}
-\centering
-\begin{tabular}{|l|c|c|}
-\hline
-\textbf{Method} & \textbf{Max.\ abs.\ diff.} & \textbf{Mean abs.\ diff.} \\
-\hline
-FDM & 0.0389 & 0.00412 \\
-\hline
-FEM(-ML -N) & 0.0445 & 0.00569 \\
-\hline
-FEM(+ML -N) & 0.0440 & 0.00475 \\
-\hline
-FEM(-ML +N) & 0.201 & 0.0281 \\
-\hline
-FEM(+ML +N) & 0.0389 & 0.00412 \\
-\hline
-\end{tabular}
-\end{table}
-
-Table~\ref{tab:mesh-convergence} reports the maximum and mean absolute differences between the fine-mesh solution and the coarse-mesh solution (interpolated onto the fine grid).
-All methods exhibit convergence with mesh refinement.
-For FDM and the standard FEM formulations (with or without mass lumping), the discrepancies are of order $10^{-2}$ in the maximum norm and about $5\times10^{-3}$ on average, indicating that the coarse mesh already provides a reasonably accurate approximation.
-
-A larger difference is observed for the FEM formulation using Nitsche's method without mass lumping (maximum difference $\approx 0.20$, mean $\approx 0.028$).
-This indicates a stronger sensitivity of this formulation to mesh resolution.
-When mass lumping is combined with Nitsche's method, however, the differences reduce to the same level as the other methods.
-Overall, these results confirm the convergence of all approaches while highlighting the improved stability and mesh robustness obtained by combining Nitsche's method with mass lumping.
-\fi
 
 
 The same domain and parameters are considered for FDM and FEM. Some of them are listed in Table~\ref{tab:model-parameters}.
@@ -778,8 +712,6 @@ of boundary conditions in convection--diffusion problems,'' Computer Methods in 
 \bibitem{b19} W. S. Guthrie and A. W. Birdsall, \textit{Effect of initial surface treatment timing on chloride concentrations in concrete bridge decks}, Tech. Rep., 2008.
 \bibitem{b19} P. Dale, F. X. Bentz, and R. D. Hooton, ``Time-dependent diffusivities: Possible misinterpretation due to spatial dependence,'' in Proc. 2nd Int. RILEM Workshop on Testing and Modelling the Chloride Ingress into Concrete, Paris, 2000.
 
-
 \end{thebibliography}
 
 \end{document}
-
