@@ -21,21 +21,21 @@
 \title{Comparison of Finite Difference and Finite Element Methods for Modeling Chloride Diffusion in Concrete}
 
 \author{\IEEEauthorblockN{ Ramin Pahnabi}
-\IEEEauthorblockA{\textit{Civil and Construction Engineering} \\
+\IEEEauthorblockA{\textit{Department of Civil and Construction Engineering} \\
 \textit{Brigham Young University}\\
-Provo, United States  \\
+Provo, Utah, United States  \\
 rpahnabi@byu.edu}
 \and
 \IEEEauthorblockN{W. Spencer Guthrie}
-\IEEEauthorblockA{\textit{Civil and Construction Engineering} \\
+\IEEEauthorblockA{\textit{Department of Civil and Construction Engineering} \\
 \textit{Brigham Young University}\\
-Provo, United States \\
+Provo, Utah, United States \\
 guthrie@byu.edu}
 \and
 \IEEEauthorblockN{Kendrick M. Shepherd}
-\IEEEauthorblockA{\textit{Civil and Construction Engineering} \\
+\IEEEauthorblockA{\textit{Department of Civil and Construction Engineering} \\
 \textit{Brigham Young University}\\
-Provo, United States \\
+Provo, Utah, United States \\
 kendrick\_shepherd@byu.edu}
 }
 
@@ -43,9 +43,10 @@ kendrick\_shepherd@byu.edu}
 \maketitle
 
 \begin{abstract}
-A proper understanding of chloride ion ingress into concrete and effective mitigation of its effects are crucial for preventing corrosion and premature failure of reinforced concrete structures.
-Previous National Institute of Standards and Technology (NIST) software employed the finite difference method (FDM) to evaluate chloride diffusion in concrete; however, this approach is not readily extensible to modeling complex geometries including the effects of reinforcing rebar. The purpose of this study is to develop finite element method (FEM) software that can exactly reproduce the FDM results, and can be extended to handle more general and complex geometries, such as concrete containing reinforcing steel (rebar).
-The FEM results show good agreement with the FDM results and the FEM could be used for the more complicated problem indicating little difference between both methods.
+A proper understanding of chloride ingress into concrete and effective mitigation of its effects are crucial for preventing corrosion and premature failure of reinforced concrete structures.
+Previous National Institute of Standards and Technology software employed the finite difference method (FDM) to evaluate chloride diffusion in concrete; however, this approach is not readily extensible to modeling complex geometries including the effects of reinforcing rebar. 
+The purpose of this study is to develop finite element method (FEM) software that can exactly reproduce the FDM results and that can be extended to handle more general and complex geometries, such as concrete containing reinforcing steel.
+The FEM results show excellent agreement with the FDM results, and the FEM could therefore be used for more complicated modeling problems.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -55,25 +56,31 @@ Chloride, Finite Deference Method (FDM), Finite Element Method (FEM), Concrete, 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Introduction}
 
-Chloride-induced corrosion is the main cause of deterioration of reinforced concrete (RC) structures in chloride-laden environments\cite{b1} and consequently, much research effort has been put towards the prediction of chloride-induced corrosion damage in RC structures\cite{b2,b3,b4,b5,b6,b7}. 
-A considerable amount of research has been undertaken on the chloride-induced corrosion process, and different types of models, including empirical, mathematical, numerical and probabilistic ones, have been developed for service life prediction of corrosion-affected RC structures\cite{b2,b3,b8}.
-In the past, both empirical and numerical approaches have been used to develop corrosion rate prediction models, each with its own strengths and shortcomings. Experimental models work well within the test conditions they were created for, but they often do not apply effectively to situations beyond the experiments\cite{b9,b10,b11}. 
-Therefore, numerical methods are frequently used to ensure reliable prediction in general conditions. These methods include the finite difference method (FDM) and finite element method(FEM). 
+Chloride-induced corrosion of reinforcing steel is the main cause of deterioration of reinforced concrete (RC) structures in chloride-laden environments\cite{b1}, and, consequently, much research effort has been put towards the prediction of chloride-induced corrosion damage in RC structures\cite{b2,b3,b4,b6}. 
+Specifically, a considerable amount of research has been focused on the chloride-induced corrosion process, and different types of models, including empirical, mathematical, numerical and probabilistic ones, have been developed for service life prediction of corrosion-affected RC structures\cite{b2,b3,b8}.
+In the past, both empirical and numerical approaches have been used to develop corrosion rate prediction models, each with its own strengths and shortcomings.
+Experimental models work well within the test conditions for which they were created, but they often do not apply effectively to situations beyond the experiments\cite{b9,b10,b11}. 
+Therefore, numerical methods are frequently used to ensure reliable prediction in general conditions. These methods include the finite difference method (FDM) and finite element method (FEM). 
 
-National Institute of Standards and Technology(NIST) historically deployed FDM software\cite{b18,b19} used by state departments of transportation to predict chloride diffusion in concrete bridge decks\cite{b19}. While FDM provides a straightforward and computationally efficient method for modeling diffusion, it is often limited in handling complex geometries. 
-There are many papers about the importance the FEM in chloride diffusion\cite{b12,b14}. Furthermore, studies \cite{b13}  show that the FEM can be used to predict crack initiation and propagation due to chloride-induced corrosion. These results are then used to update chloride propagation and predictions to realistically represent how cracking and corrosion affect each other. 
+The National Institute of Standards and Technology (NIST) historically deployed FDM software\cite{b18,b19} used by researchers to predict chloride diffusion in concrete bridge decks\cite{b19}. While FDM provides a straightforward and computationally efficient method for modeling diffusion, it is often limited in handling complex geometries and boundary conditions. 
+There are many papers about the importance of the FEM in chloride diffusion\cite{b12,b14}. Furthermore, studies \cite{b13}  show that the FEM can be used to predict concrete crack initiation and propagation due to chloride-induced corrosion of reinforcing steel. 
+These results are then used to update chloride propagation and predictions to realistically represent how concrete cracking and steel corrosion affect each other. 
 
-In this study, we leverage FEM's flexibility to simulate chloride diffusion and validate its performance against FDM results. 
-While FDM is straightforward for simple domains, it struggles with the geometric complexity and boundary conditions. 
-The variational formulation and capacity of FEM to operate on unstructured meshed make it inherently more flexible. 
-The following sections demonstrate how FEM provides alternative framework for predicting chloride penetration, which should ultimately support geometrically precise durability evaluation and maintenance strategies for RC infrastructure.
-Furthermore, a pathway is identified to translate the existing FDM code into the expanded FEM framework, enabling more accurate and flexible modeling of real-world structural conditions.
-
+The objective of this research is to develop a new finite element method (FEM) software that can exactly reproduce the FDM results and that can be extended to handle more general and complex geometries and boundary conditions.
+%In this study, we leverage FEM's flexibility to simulate chloride diffusion and validate its performance against FDM results. 
+%While FDM is straightforward for simple domains, it struggles with the geometric complexity and boundary conditions. 
+The variational formulation and capacity of FEM to operate on unstructured meshes make it inherently more flexible than FDM. 
+The following sections demonstrate how FEM provides an alternative framework for predicting chloride penetration, which should ultimately inform geometrically precise durability evaluations and maintenance strategies for RC infrastructure.
+Furthermore, a pathway is identified to translate the existing FDM code developed by NIST into the expanded FEM framework, enabling more accurate and flexible modeling of real-world structural conditions.
+Presentation of the physics problem is followed by explanations of these numerical methods.
+The results of the models are then compared and discussed.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Physics Problem}
 
-\paragraph{Coupled system of equations}
+Presentation of the physics problem at the center of this research involves description of a coupled system of equations and consideration of boundary and initial conditions.
+
+\subsection{Coupled System of Equations}
 
 Chloride ingress into concrete is often modeled using the coupled system of equations,
 \begin{equation}
@@ -127,24 +134,24 @@ C_{\mathrm{ads}}
 \label{eq:adsorption_rate}
 \end{equation}
 
-where $C_{\mathrm{free}}$ denotes the free chloride concentration in the pore solution, $C_{\mathrm{ads}}$ describes the adsorbed chloride concentration (mol/m$^3$), and $C_{\mathrm{react}}$ indicates chloride consumed due to irreversible chemical reaction.
-Known inputs to this system include the diffusion coefficient, $D$; the reaction rate constant, $k_{\mathrm{react}}$; a reaction indicator function, $r$, that equals one in reactive regions and zero otherwise; a source term $f$; and coefficients $k_{\mathrm{bind}}$, $\alpha$, and $\beta$ which control the binding kinetics and adsorption capacity.
-Here, $L$ denotes the length of the spatial domain and $T$ indicates the termination time.
+where $C_{\mathrm{free}}$ denotes the free chloride concentration in the pore solution, $C_{\mathrm{ads}}$ describes the adsorbed chloride concentration (mol/m$^3$), and $C_{\mathrm{react}}$ indicates chloride consumed due to irreversible chemical reactions.
+Known inputs to this system include the diffusion coefficient, $D$; the reaction rate constant, $k_{\mathrm{react}}$; a reaction indicator function, $r$, that equals {1} in reactive regions and {0} otherwise; a source term $f$; and coefficients $k_{\mathrm{bind}}$, $\alpha$, and $\beta$, which control the binding kinetics and adsorption capacity.
+Here, $L$ denotes the length of the spatial domain, and $T$ indicates the termination time.
 
 Equation (\ref{eq:diff_react}) represents the diffusion--reaction model governing the free chloride concentration, which is inherently coupled with the amount of free chloride that is consumed due reactions and adsorption. 
 Equations~(\ref{eq:reaction_rate}) and (\ref{eq:adsorption_rate}), consequently, represent irreversible reactions and Langmuir-type adsorption (which describes the binding of chloride ions to the concrete), respectively. 
 By accounting for both the reaction and the adsorption terms, the bound chloride is separated from the total chloride content, and the remaining portion corresponds to the free chloride concentration.
 
-\paragraph{Boundary and Initial Conditions}
+\subsection{Boundary and Initial Conditions}
 
-The diffusion--reaction problem is closed by prescribing boundary conditions at both ends of the spatial domain. At the top boundary ($x=0$), the chloride concentration is typically fixed to a prescribed value, representing a constant or time--dependent exposure condition. This is enforced through a Dirichlet boundary condition,
+The diffusion--reaction problem is closed by prescribing boundary conditions at both ends of the spatial domain. At the top boundary ($x=0$), the chloride concentration is typically fixed at a prescribed value, representing a constant or time--dependent exposure condition. This is enforced through a Dirichlet boundary condition,
 \begin{equation}
 U(0,t) = g,
 \label{eq:bc_dirichlet}
 \end{equation}
 where $g$ denotes the imposed boundary concentration.
 
-At the bottom boundary ($x=L$), chloride transport frequently is controlled through a specified outward flux, which is modeled using a Neumann boundary condition,
+At the bottom boundary ($x=L$), chloride transport is frequently controlled through a specified outward flux, which is modeled using a Neumann boundary condition,
 \begin{equation}
 \left.
 \frac{\partial U}{\partial x}
@@ -153,21 +160,21 @@ At the bottom boundary ($x=L$), chloride transport frequently is controlled thro
 -\,h,
 \label{eq:bc_neumann}
 \end{equation}
-where $h$ represents the prescribed flux at the boundary which is typically $0$. Together, these boundary conditions reflect a system in which chloride ingress is driven by exposure at one boundary while transport across the opposite boundary is regulated by a specified flux.
+where $h$ represents the prescribed flux at the boundary, which is typically $0$. Together, these boundary conditions reflect a system in which chloride ingress is driven by exposure at one boundary while transport across the opposite boundary is regulated by a specified flux.
 
 To solve the time-dependent diffusion–reaction problem, the initial condition must be specified before starting the time integration. 
-In our case, the initial condition was set to zero throughout the domain, while a fixed chloride concentration g was prescribed at the top boundary section.
+In our case, the initial condition was set to {0} throughout the domain, while a fixed chloride concentration g was prescribed at the top boundary section.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Numerical Methods}
 
-The coupled diffusion--reaction--adsorption system is solved using a staggered (operator-splitting) time-integration scheme, in which diffusion and reaction/adsorption are solved sequentially at each time step~\cite{b17}. 
+The coupled diffusion-reaction-adsorption system is solved using a staggered (operator-splitting) time-integration scheme, in which diffusion and reaction/adsorption are solved sequentially at each time step~\cite{b17}. 
 The Forward Euler method is used for all temporal discretization while we compute the spatial discretization using FDM or FEM.
-Particularly, we use the Lie splitting \cite{b17} in which for a given time step, the reaction-diffusion system is solved first while neglecting the effects of adsorption, after which the adsorption equation is solved independently using the just-computed results from the reaction-diffusion system.
-Finally, mass balance is restored by removing the computed adsorped chloride from the computed free chloride.
-This splitting technique decouples the nonlinearity at the expense of being first order accurate in time. 
-However, because Forward Euler is already first-order accurate in time, the effects of splitting mechanism are consistent with those of our integration scheme, leading overall efficiency.
+Particularly, we use the Lie splitting \cite{b17} in which, for a given time step, the reaction-diffusion system is solved first while neglecting the effects of adsorption, after which the adsorption equation is solved independently using the just-computed results from the reaction-diffusion system.
+Finally, mass balance is restored by removing the computed adsorbed chloride from the computed free chloride.
+This splitting technique decouples the nonlinearity at the expense of being first-order accurate in time. 
+However, because Forward Euler is already first-order accurate in time, the effects of this splitting mechanism are consistent with those of our integration scheme, leading to overall efficiency.
 
 \subsection{Finite Difference Method (FDM)}\label{AA}
 
@@ -177,7 +184,7 @@ The spatial domain is discretized using a one-dimensional finite difference meth
 The solution at each node is approximated by a discrete variable $d_i(t) \approx d(x_i,t)$.
 
 Spatial derivatives in the diffusion term are approximated using second-order central differences.
-Boundary conditions are incorporated directly into the discrete system. At the top boundary, the prescribed concentration is enforced by fixing the nodal value, while at the bottom boundary, the specified flux condition is imposed through a finite difference approximation of the spatial gradient. 
+Boundary conditions are incorporated directly into the discrete system. At the top boundary, the prescribed concentration is enforced by fixing the nodal value, while, at the bottom boundary, the specified flux condition is imposed through a finite difference approximation of the spatial gradient. 
 
 \paragraph{Time Discretization}
 
@@ -207,12 +214,12 @@ k_{\mathrm{react}}\, r_i\, d_i^n
 
 
 
-With boundary conditions applied explicitly:
-At the top surface of the concrete slab, the chloride concentration is assumed to be maintained at a fixed value, representing continuous exposure to a chloride-rich environment (considered as Dirichlet BCs). This condition enforces a constant chloride level at the exposed surface throughout the simulation.
-At the bottom of the slab, chloride transport is governed by a prescribed flux condition (Neumann BCs) or a constant chloride level (Dirichlet BCs). This represents controlled exchange across the lower boundary, such as limited chloride penetration into an underlying layer. By specifying the rate at which chloride enters or leaves the slab at this boundary, the model captures the physical constraint on chloride movement at the base of the domain.
+With boundary conditions applied explicitly,
+at the top surface of the concrete slab, the chloride concentration is assumed to be maintained at a fixed value, representing continuous exposure to a chloride-rich environment (considered as Dirichlet boundary conditions). This condition enforces a constant chloride level at the exposed surface throughout the simulation.
+At the bottom of the slab, chloride transport is governed by a prescribed flux condition (Neumann boundary conditions) or a constant chloride level (Dirichlet boundary conditions). This represents controlled exchange across the lower boundary, such as limited chloride penetration into an underlying layer. By specifying the rate at which chloride enters or leaves the slab at this boundary, the model captures the physical constraint on chloride movement at the base of the domain.
 
 
-Thus the explicit update at node $N$ is:
+Thus, the explicit update at node $N$ is:
 \begin{equation}
 \begin{aligned}
 d_N^{n+1}
@@ -237,7 +244,7 @@ k_{\mathrm{react}}\, r_N\, d_N^n
 \end{equation}
 
 
-\paragraph{CFL Condition for Explicit Scheme}\mbox{} To be sure that the explicit method (Forward-Euler) is reliable and the results  are stable, following limitation is considered:
+\paragraph{Courant--Friedrichs--Lewy Condition for Explicit Scheme}\mbox{} To be sure that the explicit method (Forward-Euler) is reliable and the results  are stable, the following limitation is considered:
 
 \begin{equation}
 \frac{\max(D) \, \Delta t}{\Delta x^2} \le 0.5 
@@ -254,8 +261,7 @@ k_{\mathrm{react}}\, r_N\, d_N^n
 \paragraph{Spatial Discretization}
 
 The one-dimensional diffusion--reaction problem is solved numerically using the
-finite element method (FEM) with linear basis function. The formulation follows the standard Galerkin
-approach described by \cite{b15}. FEM is particularly well suited for transport problems in heterogeneous materials such as concrete, as it naturally accommodates spatially varying material properties and allows for local mesh refinement \cite{b15}.
+finite element method (FEM) with a linear basis function. The formulation follows the standard Galerkin approach described by \cite{b15}. FEM is particularly well suited for transport problems in heterogeneous materials such as concrete, as it naturally accommodates spatially varying material properties and allows for local mesh refinement \cite{b15}.
 
 Making use of the Lie splitting, in abstract form, the weak problem can be written as: find $u \in S$ such that
 \begin{equation}
@@ -297,13 +303,13 @@ This leads to a discrete representation of the form:
 u_h(x) = \sum_{i=1}^{N} d_i(t)\, N_i(x),
 \end{equation}
 where $N_i(x)$ are the finite element shape functions and $d_i$ are the unknown
-nodal values(coefficients). Substituting this approximation into the weak form and choosing the test functions from the same space yields a system of algebraic equations of the form.
+nodal values (coefficients). Substituting this approximation into the weak form and choosing the test functions from the same space yields a system of algebraic equations of the form.
 
 
 \paragraph{Time Discretization}
 
 For time-dependent problems, the semi-discrete finite element formulation
-leads to a system of ordinary differential equations of the form
+leads to a system of ordinary differential equations of the form:
 \begin{equation}
 \mathbf{M}\, \dot{\mathbf{d}}(t)
 +
@@ -354,9 +360,9 @@ step $\Delta t$ to satisfy a problem-dependent stability constraint \eqref{eq:cf
 \subsection{Nitsche Method for Weak Imposition of Dirichlet Boundary Conditions}
 
 To weakly impose essential boundary conditions within the finite element
-framework as is done in the FDM software, Nitsche’s method is employed \cite{b16}. This approach allows Dirichlet boundary conditions to be enforced variationally, while maintaining consistency and stability of the numerical scheme. In contrast, finite difference methods (FDM) apply boundary conditions directly at grid points, making their implementation simple, especially for structured domains.
+framework as is performed in the FDM software, Nitsche’s method is employed \cite{b16}. This approach allows Dirichlet boundary conditions to be enforced variationally, while maintaining consistency and stability of the numerical scheme. In contrast, FDMs apply boundary conditions directly at grid points, making their implementation simple, especially for structured domains.
 
-In Nitsche’s method \cite{b16}, the standard weak formulation is augmented by additional boundary terms that weakly enforce the Dirichlet condition. These terms ensure consistency with the strong form, restore symmetry of the bilinear form, and add a stabilization contribution controlled by a penalty parameter.
+In Nitsche’s method \cite{b16}, the standard weak formulation is augmented by additional boundary terms that weakly enforce the Dirichlet boundary condition. These terms ensure consistency with the strong form, restore symmetry of the bilinear form, and add a stabilization contribution controlled by a penalty parameter.
 
 
 The resulting problem is
@@ -406,11 +412,11 @@ value.
 
 
 %%%%%%%%%%%%%NEW IMAGES
-\section{Validation and Comparison}
+\section{Comparison of Model Results}
 
-In this section, we compare the finite difference method (FDM) with the finite element formulations. 
-The objectives are threefold: first, to verify that all methods converge; second, to numerically assess the error associated with the coarse mesh; and third, to examine the differences between the FEM formulations and the FDM commonly used in practice.
-To make these comparisons, we compute chloride diffusion through a slab studied in \cite{} \Rd{Dr. Guthrie's paper}. 
+In this section, we compare the FEM and FDM formulations for simulating chloride diffusion in concrete. 
+The objectives are threefold: first, to verify that all methods converge; second, to numerically assess the error associated with the coarse mesh; and third, to examine the differences between the FEM formulations and the FDM historically used in practice.
+To make these comparisons, we compute chloride diffusion for a scenario similar to that described for a bridge deck in \cite{b18}. 
 A complete discussion of concrete-chloride chemistry present in these simulations is outside the scope of this paper, but input parameters and forcing behavior for these simulations are described in Tables \ref{tab:model-parameters} and \ref{tab:monthly-data}. 
 The interested reader is referred to the work of Bentz and Feng \cite{b19} for additional guidance.
 
@@ -511,24 +517,24 @@ $k_{\mathrm{bind}}$ &
 Binding rate constant: 1e-07
 \end{tabular} \\
 \hline
-$C3A$ &
+$C_3A$ &
 \begin{tabular}[c]{@{}l@{}}
-C3A volume fraction (typically 5--10\%)
+$C_3A$ volume fraction (typically 5--10\%)
 \end{tabular} \\
 \hline
-$C4AF$ &
+$C_4AF$ &
 \begin{tabular}[c]{@{}l@{}}
-C4AF volume fraction (typically 5--13\%)
+$C_4AF$ volume fraction (typically 5--13\%)
 \end{tabular} \\
 \hline
-$C3A_{\mathrm{react}}$ &
+$C_3A_{\mathrm{react}}$ &
 \begin{tabular}[c]{@{}l@{}}
-Formation of Friedel's salt from C3A (= 7.419)
+Formation of Friedel's salt from $C_3A$ (= 7.419)
 \end{tabular} \\
 \hline
-$C4AF_{\mathrm{react}}$ &
+$C_4AF_{\mathrm{react}}$ &
 \begin{tabular}[c]{@{}l@{}}
-Formation of Friedel's salt from C4AF (= 4.119)
+Formation of Friedel's salt from $C_4AF$ (= 4.119)
 \end{tabular} \\
 
 
@@ -583,23 +589,23 @@ For instance, FEM(-ML +N) indicates that no  mass lumping was used but that Nits
 
 
 Comparative plots are first presented for FDM, FEM(-ML -N), and FEM(+ML -N) because each of these strongly enforces input Dirichlet boundary conditions.
-Coarse mesh computations involved a uniform spatial discretization with 100 spatial  elements and 500 time steps Fig.~\ref{fig:fdm-vs-fem-nitsche_100},
-while computational on a finer discretization involving 500 spatial elements and 100,000 time steps are shown in Fig.~\ref{fig:fdm-vs-fem-nitsche_500}.
-Differences between computed FEM values compared to the FDM benchmark are presented in Figs~\ref{fig:fdm-vs-fem-error-all-coarse} and \ref{fig:fdm-vs-fem-error-all-fine} for both the coarse and the fine meshes, respectively.
-As is expected, FEM(+ML -N) results in exactly the same values as the FDM solver, while a small difference appears when mass lumping is not used.
+Coarse mesh computations involved a uniform spatial discretization with 100 spatial  elements and 500 time steps that the results are shown in Fig.~\ref{fig:fdm-vs-fem-nitsche_100},
+while computations on a finer discretization involving 500 spatial elements and 100,000 time steps are shown in Fig.~\ref{fig:fdm-vs-fem-nitsche_500}.
+Differences between computed FEM values compared to the FDM benchmark are presented in Figs.~\ref{fig:fdm-vs-fem-error-all-coarse} and \ref{fig:fdm-vs-fem-error-all-fine} for both the coarse and the fine meshes, respectively.
+As expected, FEM(+ML -N) results in exactly the same values as the FDM solver, while a small difference appears when mass lumping is not used.
 However, with refinement, this difference diminishes.
 
 \begin{figure}[!b]
 \centering
 \includegraphics[width=\linewidth]{100_plots.png}
-\caption{Comparing FDM with FEM with Nitsche and ML with coarse mesh.}
+\caption{Comparing FDM with FEM with Nitsche and ML on the coarse mesh.}
 \label{fig:fdm-vs-fem-nitsche_100}
 \end{figure}
 
 \begin{figure}[!tb]
 \centering
 \includegraphics[width=\linewidth]{500_plots.png}
-\caption{Comparing FDM with FEM with Nitsche and ML with fine mesh.}
+\caption{Comparing FDM with FEM with Nitsche and ML on the fine mesh.}
 \label{fig:fdm-vs-fem-nitsche_500}
 \end{figure}
 
@@ -619,12 +625,11 @@ However, with refinement, this difference diminishes.
 \end{figure}
 
 Also in Fig.~\ref{fig:coarse_vs_fine}, we compare the results from the fine and coarse meshes in a single plot. In Fig.~\ref{fig:coarse_vs_fine}, you can see that with refinement, we obtain convergence with the FEM method by comparing the coarse and fine mesh results, which gives us confidence in the results. Based on this plot, the FEM(+ML -N) results are one order of magnitude smaller than the others.
-\Rd{Also include a plot that describes how FEM -N on coarse scale compares to FDM on fine scale and discuss confidence in our results.}
 
 \begin{figure}[!tb]
 \centering
 \includegraphics[width=\linewidth]{coarse_vs_fine_error.png}
-\caption{Error comparison between FDM and FEM formulations on coarse and fine mesh}
+\caption{Error comparison between FDM and FEM formulations on the coarse and fine mesh.}
 \label{fig:coarse_vs_fine}
 \end{figure}
 
@@ -632,12 +637,12 @@ Also in Fig.~\ref{fig:coarse_vs_fine}, we compare the results from the fine and 
 \begin{figure}[!tb]
 \centering
 \includegraphics[width=\linewidth]{100_N_plots.png}
-\caption{Error comparison between FDM and FEM formulations}
+\caption{Comparison between FDM and selected FEM formulations.}
 \label{fig:nitsche_plots}
 \end{figure}
 
-Conversely, results using the Nitsche method differ more dramatically than those with strong boundary enforcement, and are shown in Fig.~\ref{fig:nitsche_plots}.
-As can be seen, variation in the boundary enforcement parameter $\gamma$ yields different computed solutions, with higher values of $\gamma$ more strongly enforcing the top boundary constraint, but also introducing worse matrix conditioning and smaller stable time steps.
+Conversely, results using the Nitsche method differ more dramatically than those with strong boundary enforcement, as shown in Fig.~\ref{fig:nitsche_plots}.
+As shown, variation in the boundary enforcement parameter $\gamma$ yields different computed solutions, with higher values of $\gamma$ more strongly enforcing the top boundary constraint but also introducing worse matrix conditioning and smaller stable time steps.
 Simulations performed here use 100 uniform spatial elements and 10{,}000 time steps.
 The absolute difference between FDM results, each of the Nitsche methods, and the FEM results with strongly enforced boundary conditions are shown in  Fig.~\ref{fig:nitsche_error_with_fem}.
 Particularly, Nitsche methods yield results whose difference compared to the FDM results are an order of magnitude larger than that of the FEM results wherein Dirichlet boundary conditions are strongly enforced.
@@ -660,27 +665,34 @@ The same domain and parameters are considered for FDM and FEM. Some of them are 
 
 \section{Discussion}
 
+Discussion of important advantages of FEM over FDM as well as limitations in both methods, is provided in this section.
+
 \subsection{Advantages of FEM over FDM}
 
-The finite element method (FEM) offers several advantages over the finite difference method (FDM), particularly for engineering applications including complex geometries and boundary conditions. Unlike standard FDM, which is typically restricted to structured grids and regular domains, FEM can naturally accommodate irregular geometries and spatially varying material properties. In addition, FEM provides greater flexibility in the treatment of complex boundary conditions and is generally more suitable for solving problems involving complicated physical processes. 
+FEM offers several advantages over the FDM, particularly for engineering applications including complex geometries and boundary conditions. Unlike standard FDM, which is typically restricted to structured grids and regular domains, FEM can naturally accommodate irregular geometries and spatially varying material properties. In addition, FEM provides greater flexibility in the treatment of complex boundary conditions and is generally more suitable for solving problems involving complicated physical processes. 
 As a result, complex geometric problems can often be modeled more effectively using FEM than FDM while still producing the same values in geometrically simple cases.
-Results also indicate that evaluations using Nitsche's method should be treated with care because a poor choice of the parameter $\gamma$ may lead to overly weak enforcement of boundary conditions or may lead to non-physical, non-monotone results.
+Results also indicate that evaluations using Nitsche's method should be treated with care because a poor choice of the parameter $\gamma$ may lead to overly weak enforcement of boundary conditions or may lead to non-physical, non-monotonic results.
 
 \subsection{Limitations}
 
-Despite their effectiveness, both FEM and FDM require careful treatment of boundary conditions and discretization parameters to ensure numerical accuracy and stability. The FDM is computationally efficient and simple to implement, but its applicability is limited for irregular domains and complex geometries. On the other hand, while FEM provides greater flexibility and modeling capability, it typically involves higher computational cost and increased implementation complexity compared to FDM.
+Despite their effectiveness, both FEM and FDM require careful treatment of boundary conditions and discretization parameters to ensure numerical accuracy and stability.
+FDM is computationally efficient and simple to implement, but its applicability is limited for irregular domains and complex geometries.
+On the other hand, while FEM provides greater flexibility and modeling capability, it typically involves higher computational cost and increased implementation complexity compared to FDM.
 
 \section{Conclusions}
 
-In this study, the finite element method (FEM) was applied to simulate one-dimensional chloride diffusion and its performance was compared with the finite difference method (FDM). The results show that, with appropriate boundary treatment, such as the use of Nitsche's method and mass lumping, the FEM solutions closely reproduce the reference FDM results. The results of the FEM(+ML +N) are still comparable for the considered diffusion problem. 
+In this study, the FEM was applied to simulate one-dimensional chloride diffusion, and its performance was compared with the FDM.
+The results show that, with appropriate treatment of boundary conditions, such as the use of Nitsche's method and mass lumping, the FEM solutions closely reproduce the reference FDM results. The results of the FEM(+ML +N) are still comparable for the considered diffusion problem. 
 
 In addition to its accuracy, FEM offers greater flexibility for modeling complex engineering problems in reinforced concrete. In particular, it allows the treatment of irregular geometries, spatially varying material properties, and more sophisticated boundary conditions, which are difficult to handle using standard FDM approaches.
 
 Future work could extend FEM analysis for chloride diffusion for 2D and 3D analysis, alternative temporal discretization, or multiphysics extensions to cracking or advective flow.
 
 \section{Acknowledgements}
-W. S. Guthrie and R. Pahnabi were partially funded by the King Hussein Fellowship.
-This financial support is gratefully acknowledged.
+This research was partially funded by the King Professor with the Department of Civil and Construction Engineering at Brigham Young University.
+
+%W. S. Guthrie and R. Pahnabi were partially funded by the King Hussein Fellowship.
+%This financial support is gratefully acknowledged.
 
 \begin{thebibliography}{00}
 \bibitem{b1}
@@ -691,11 +703,11 @@ B. Elsener, Z. Zhou, and M. Strobl, ``Chloride-induced corrosion of steel in con
 Cement and Concrete Research, 2015.
 \bibitem{b4}
 C. S. Das, H. Zheng, and J.-G. Dai, ``A review of chloride-induced steel corrosion in coastal reinforced concrete structures: Influence of micro-climate," Construction and Building Materials, 2024.
-\bibitem{b5}
-C. Liang, Z. Cai, H. Wu, J. Xiao, Y. Zhang, and Z. Ma, ``Chloride transport and induced steel corrosion in recycled aggregate concrete: A review," Construction and Building Materials, 2021.
+%\bibitem{b5}
+%C. Liang, Z. Cai, H. Wu, J. Xiao, Y. Zhang, and Z. Ma, ``Chloride transport and induced steel corrosion in recycled aggregate concrete: A review," Construction and Building Materials, 2021.
 \bibitem{b6}J. N\v{e}me\v{c}ek, P. Tr\'avn\'i\v{c}ek, J. N\v{e}me\v{c}kov\'a, and J. Kruis, ``Mitigation of chloride induced corrosion in reinforced concrete structures and its modeling," Computers and Concrete, 2021.  
-\bibitem{b7}
-S. C. Paul and G. P. A. Greeff van Zijl, ``Corrosion deterioration of steel in cracked SHCC," International Journal of Concrete Structures and Materials, 2017.
+%\bibitem{b7}
+%S. C. Paul and G. P. A. Greeff van Zijl, ``Corrosion deterioration of steel in cracked SHCC," International Journal of Concrete Structures and Materials, 2017.
 \bibitem{b8} J. Zhang and M. M. S. Cheung, ``Modeling of chloride-induced corrosion in reinforced concrete structures," Materials and Structures, Vol. 45, No. 10, pp. 1555--1566, 2012.
 \bibitem{b9} P. Li, C. Li, C. Jia, and D. Li, ``A comparative study on chloride diffusion in concrete exposed to different marine environment conditions," Cement and Concrete Composites, 2024.  
 \bibitem{b10} P. Su, Q. Dai, and E. S. Kane, ``Predicting chloride ingression in concrete containing different SCMs based on chloride binding and electrical resistivity," Construction and Building Materials, 2024.  
@@ -710,7 +722,9 @@ of boundary conditions in convection--diffusion problems,'' Computer Methods in 
 \bibitem{b17} D.~Lanser and J.~G.~Verwer, ``Analysis of operator splitting for advection--diffusion--reaction problems from air pollution modelling,'' Journal of Computational and Applied Mathematics, vol.~111, no.~1--2, pp.~201--216, 1999.
 \bibitem{b18} A. W. Birdsall, W. S. Guthrie, and D. P. Bentz, ``Effects of initial surface treatment timing on chloride concentrations in concrete bridge decks,'' Transp. Res. Rec., vol. 2028, no. 1, pp. 103--110, 2007.
 \bibitem{b19} W. S. Guthrie and A. W. Birdsall, \textit{Effect of initial surface treatment timing on chloride concentrations in concrete bridge decks}, Tech. Rep., 2008.
-\bibitem{b19} P. Dale, F. X. Bentz, and R. D. Hooton, ``Time-dependent diffusivities: Possible misinterpretation due to spatial dependence,'' in Proc. 2nd Int. RILEM Workshop on Testing and Modelling the Chloride Ingress into Concrete, Paris, 2000.
+\bibitem{b19} Dale P. Bentz, X Feng, and R. D. Hooton, ``Time-dependent diffusivities: Possible misinterpretation due to spatial dependence,'' in Proc. 2nd Int. RILEM Workshop on Testing and Modelling the Chloride Ingress into Concrete, Paris, 2000.
+
+ R. D. Hooton
 
 \end{thebibliography}
 
